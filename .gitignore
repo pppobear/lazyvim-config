@@ -6,3 +6,31 @@ debug
 foo.*
 *.log
 data
+
+# Vim/Neovim temporary files
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.bak
+*.backup
+
+# LSP and language server files
+.luarc.json
+.vscode/
+.idea/
+
+# LazyVim lock file
+lazy-lock.json
