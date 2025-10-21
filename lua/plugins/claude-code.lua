@@ -1,4 +1,4 @@
-local toggle_key = "<C-,>"
+local toggle_key = "<leader>c1"
 return {
   {
     "coder/claudecode.nvim",
@@ -9,10 +9,7 @@ return {
     },
     opts = {
       terminal = {
-        provider = "external",
-        provider_opts = {
-          external_terminal_cmd = "kitty -e %s",
-        },
+        provider = "native",
       },
     },
   },
