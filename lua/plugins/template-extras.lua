@@ -16,42 +16,28 @@ return {
     },
   },
 
-  -- Add telescope integration for chezmoi files
+  -- Add keymaps for chezmoi files
   {
-    "nvim-telescope/telescope.nvim",
+    "folke/snacks.nvim",
     optional = true,
     keys = {
       {
-        "<leader>fc",
+        "<leader>cz",
         function()
-          require("telescope.builtin").find_files({
-            cwd = vim.fn.expand("~/.local/share/chezmoi"),
-            prompt_title = "Chezmoi Files",
-          })
+          Snacks.picker.files({ cwd = "~/.local/share/chezmoi" })
         end,
-        desc = "Find Chezmoi Files",
-      },
-      {
-        "<leader>fC",
-        function()
-          require("telescope.builtin").live_grep({
-            cwd = vim.fn.expand("~/.local/share/chezmoi"),
-            prompt_title = "Grep Chezmoi Files",
-          })
-        end,
-        desc = "Grep Chezmoi Files",
+        desc = "Chezmoi Files",
       },
     },
   },
 
-  -- Which-key descriptions
+  -- Which-key description
   {
     "folke/which-key.nvim",
     optional = true,
     opts = {
       spec = {
-        { "<leader>fc", desc = "Find Chezmoi Files" },
-        { "<leader>fC", desc = "Grep Chezmoi Files" },
+        { "<leader>cz", desc = "Chezmoi Files" },
       },
     },
   },

@@ -9,7 +9,7 @@ return {
         light = "latte",
         dark = "mocha",
       },
-      transparent_background = true,
+      transparent_background = false,
       show_end_of_buffer = false,
       term_colors = true,
       dim_inactive = {
@@ -91,3 +91,4 @@ return {
     },
   },
 }
+
