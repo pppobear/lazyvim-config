@@ -4,9 +4,9 @@ return {
     "stevearc/oil.nvim",
     dependencies = {
       "nvim-tree/nvim-web-devicons",
-      "refractalize/oil-git-status.nvim",
     },
     config = function()
+      local detail = false
       require("oil").setup({
         -- Oil will take over directory buffers (e.g. `vim .` or `:e src/`)
         default_file_explorer = true,
@@ -46,6 +46,17 @@ return {
           ["gx"] = "actions.open_external",
           ["g."] = "actions.toggle_hidden",
           ["g\\"] = "actions.toggle_trash",
+          ["gd"] = {
+            desc = "Toggle file detail view",
+            callback = function()
+              detail = not detail
+              if detail then
+                require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
+              else
+                require("oil").set_columns({ "icon" })
+              end
+            end,
+          },
         },
 
         -- Set to false to disable all of the above keymaps
@@ -131,30 +142,6 @@ return {
           },
         },
       })
-
-      -- Configure oil-git-status after oil.nvim is set up
-      require("oil-git-status").setup({
-        show_ignored = true, -- Show files ignored by git
-        symbols = {
-          index = {
-            added = "A",
-            modified = "M",
-            deleted = "D",
-            renamed = "R",
-            copied = "C",
-            unmerged = "U",
-          },
-          working_tree = {
-            added = "+",
-            modified = "•",
-            deleted = "-",
-            renamed = "➜",
-            unmerged = "‡",
-            untracked = "?",
-            ignored = "☒",
-          },
-        },
-      })
     end,
     -- Lazy load when opening a directory
     lazy = false,
@@ -190,10 +177,14 @@ return {
     },
   },
 
-  -- Optional: Disable neo-tree if you prefer oil.nvim as your only file explorer
-  -- Uncomment the following block if you want to disable neo-tree
-  -- {
-  --   "nvim-neo-tree/neo-tree.nvim",
-  --   enabled = false,
-  -- },
+  {
+    "benomahony/oil-git.nvim",
+    dependencies = { "stevearc/oil.nvim" },
+    -- No opts or config needed! Works automatically
+  },
+
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    enabled = false,
+  },
 }
