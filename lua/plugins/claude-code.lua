@@ -1,4 +1,4 @@
-local toggle_key = "<A-,>"
+local toggle_key = "<C-,>"
 return {
   {
     "coder/claudecode.nvim",
@@ -8,25 +8,10 @@ return {
       { toggle_key, "<cmd>ClaudeCodeFocus<cr>", desc = "Claude Code", mode = { "n", "x" } },
     },
     opts = {
-      terminal_cmd = "/Users/suyihang/.claude/local/claude",
       terminal = {
-        ---@module "snacks"
-        ---@type snacks.win.Config|{}
-        snacks_win_opts = {
-          position = "bottom",
-          width = 1.0,
-          height = 0.4,
-          border = "single",
-          keys = {
-            claude_hide = {
-              toggle_key,
-              function(self)
-                self:hide()
-              end,
-              mode = "t",
-              desc = "Hide",
-            },
-          },
+        provider = "external",
+        provider_opts = {
+          external_terminal_cmd = "kitty -e %s",
         },
       },
     },

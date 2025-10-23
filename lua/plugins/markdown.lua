@@ -146,7 +146,8 @@ return {
           },
         },
         -- https://github.com/MeanderingProgrammer/render-markdown.nvim/issues/509
-        win_options = { concealcursor = { rendered = "nvc" } },
+        -- 在 normal 模式下，光标所在行显示完整的 markdown 语法
+        win_options = { concealcursor = { rendered = "vc" } },
         completions = {
           blink = { enabled = true },
           lsp = { enabled = true },
@@ -217,7 +218,8 @@ return {
     ---@type snacks.Config
     opts = {
       image = {
-        doc = { enabled = true, inline = false, float = true, max_width = 80, max_height = 20 },
+        -- doc = { enabled = true, inline = false, float = true, max_width = 80, max_height = 20 },
+        doc = { enabled = false },
       },
     },
   },
