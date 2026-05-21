@@ -4,15 +4,14 @@ return {
   {
     "mfussenegger/nvim-jdtls",
     opts = function()
-      local java21_home = vim.fn.expand("~/.sdkman/candidates/java/21.0.9-zulu")
-      local java8_home = vim.fn.expand("~/.sdkman/candidates/java/8.0.472-zulu")
+      local java21_home = vim.fn.expand("~/.asdf/installs/java/zulu-21.46.19/zulu-21.jdk/Contents/Home")
+      local java8_home = vim.fn.expand("~/.asdf/installs/java/zulu-8.90.0.19/zulu-8.jdk/Contents/Home")
       local mason_path = vim.fn.stdpath("data") .. "/mason"
 
-      -- Build the cmd with JAVA_HOME set inline
       local cmd = {
-        "env",
-        "JAVA_HOME=" .. java21_home,
-        vim.fn.exepath("jdtls"),
+        mason_path .. "/bin/jdtls",
+        "--java-executable",
+        java21_home .. "/bin/java",
       }
 
       -- Add lombok if available
@@ -42,11 +41,15 @@ return {
           local project_name = opts.project_name(root_dir)
           local full = vim.deepcopy(opts.cmd)
           if project_name then
+            local config_dir = opts.jdtls_config_dir(project_name)
+            local workspace_dir = opts.jdtls_workspace_dir(project_name)
+            vim.fn.mkdir(config_dir, "p")
+            vim.fn.mkdir(workspace_dir, "p")
             vim.list_extend(full, {
               "-configuration",
-              opts.jdtls_config_dir(project_name),
+              config_dir,
               "-data",
-              opts.jdtls_workspace_dir(project_name),
+              workspace_dir,
             })
           end
           return full
