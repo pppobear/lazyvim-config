@@ -1,12 +1,99 @@
+local function trim(value)
+  return (value or ""):gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function java_executable(home)
+  return home and home ~= "" and vim.fn.executable(home .. "/bin/java") == 1
+end
+
+local function java_major(home)
+  if not java_executable(home) then
+    return nil
+  end
+
+  local output = vim.fn.systemlist({ home .. "/bin/java", "-version" })
+  local version = table.concat(output, "\n"):match('version "([^"]+)"')
+  if not version then
+    return nil
+  end
+
+  if version:match("^1%.8") then
+    return "8"
+  end
+
+  return version:match("^(%d+)")
+end
+
+local function system_java_home(version)
+  if vim.fn.executable("/usr/libexec/java_home") ~= 1 then
+    return nil
+  end
+
+  local output = vim.fn.systemlist({ "/usr/libexec/java_home", "-v", version })
+  if vim.v.shell_error == 0 and output[1] and java_executable(trim(output[1])) then
+    return trim(output[1])
+  end
+
+  return nil
+end
+
+local function asdf_java_home(major)
+  local asdf_dir = vim.env.ASDF_DATA_DIR or vim.fn.expand("~/.asdf")
+  local candidates = vim.fn.glob(asdf_dir .. "/installs/java/*/*/Contents/Home", false, true)
+  table.sort(candidates)
+
+  for i = #candidates, 1, -1 do
+    local home = candidates[i]
+    if java_major(home) == major then
+      return home
+    end
+  end
+
+  return nil
+end
+
+local function env_java_home(major, names)
+  for _, name in ipairs(names) do
+    local home = vim.env[name]
+    if java_major(home) == major then
+      return home
+    end
+  end
+
+  return nil
+end
+
+local function resolve_java_home(major, system_version, env_names)
+  return system_java_home(system_version) or env_java_home(major, env_names) or asdf_java_home(major)
+end
+
 -- Configure jdtls to use Java 21 (required by jdtls)
--- while keeping Java 8 as the project runtime
+-- while keeping Java 8 as the project runtime.
 return {
   {
     "mfussenegger/nvim-jdtls",
     opts = function()
-      local java21_home = vim.fn.expand("~/.asdf/installs/java/zulu-21.46.19/zulu-21.jdk/Contents/Home")
-      local java8_home = vim.fn.expand("~/.asdf/installs/java/zulu-8.90.0.19/zulu-8.jdk/Contents/Home")
+      local java21_home = resolve_java_home("21", "21", { "JAVA21_HOME", "JAVA_21_HOME", "JAVA_HOME" })
+      local java8_home = resolve_java_home("8", "1.8", { "JAVA8_HOME", "JAVA_8_HOME" })
       local mason_path = vim.fn.stdpath("data") .. "/mason"
+      local runtimes = {}
+
+      assert(java21_home, "Java 21 home not found. Install/register a JDK 21 or set JAVA21_HOME.")
+
+      if java8_home then
+        table.insert(runtimes, {
+          name = "JavaSE-1.8",
+          path = java8_home,
+          default = true,
+        })
+      else
+        vim.notify("Java 8 home not found. Project runtime JavaSE-1.8 was not configured.", vim.log.levels.WARN)
+      end
+
+      table.insert(runtimes, {
+        name = "JavaSE-21",
+        path = java21_home,
+      })
 
       local cmd = {
         mason_path .. "/bin/jdtls",
@@ -58,17 +145,7 @@ return {
         settings = {
           java = {
             configuration = {
-              runtimes = {
-                {
-                  name = "JavaSE-1.8",
-                  path = java8_home,
-                  default = true,
-                },
-                {
-                  name = "JavaSE-21",
-                  path = java21_home,
-                },
-              },
+              runtimes = runtimes,
             },
           },
         },

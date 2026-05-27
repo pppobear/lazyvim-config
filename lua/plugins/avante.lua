@@ -11,8 +11,7 @@ return {
     "yetone/avante.nvim",
     event = "VeryLazy",
     version = false,
-    build = vim.fn.has("win32") == 1
-        and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+    build = vim.fn.has("win32") == 1 and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
       or "make",
     dependencies = {
       "nvim-tree/nvim-web-devicons",
@@ -66,18 +65,11 @@ return {
       })
     end,
     opts = {
-      provider = "claude-code",
-      auto_suggestions_provider = "claude-code",
+      provider = "codex",
       selector = {
         provider = "snacks",
       },
       acp_providers = {
-        ["gemini-cli"] = acp("gemini", {
-          "--experimental-acp",
-        }, {
-          NODE_NO_WARNINGS = "1",
-          GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"),
-        }),
         ["claude-code"] = acp("npx", {
           "-y",
           "-g",
@@ -89,22 +81,7 @@ return {
           ACP_PATH_TO_CLAUDE_CODE_EXECUTABLE = vim.fn.exepath("claude"),
           ACP_PERMISSION_MODE = "bypassPermissions",
         }),
-        goose = acp("goose", {
-          "acp",
-        }),
-        codex = acp("npx", {
-          "-y",
-          "-g",
-          "@zed-industries/codex-acp",
-        }, {
-          NODE_NO_WARNINGS = "1",
-          HOME = os.getenv("HOME"),
-          PATH = os.getenv("PATH"),
-        }),
-        cursor = acp("npx", {
-          "-y",
-          "@blowmage/cursor-agent-acp",
-        }, {
+        codex = acp("codex-acp", {}, {
           NODE_NO_WARNINGS = "1",
           HOME = os.getenv("HOME"),
           PATH = os.getenv("PATH"),
