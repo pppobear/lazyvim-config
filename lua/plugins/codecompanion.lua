@@ -29,6 +29,64 @@ return {
     },
     opts = {
       adapters = {
+        http = {
+          ["litellm-fast"] = function()
+            local pi_dir = "/Users/enoch/.pi"
+
+            local function agent_dir()
+              return pi_dir .. "/agent"
+            end
+
+            local function read_json(path)
+              local ok, lines = pcall(vim.fn.readfile, path)
+              if not ok then
+                return nil
+              end
+
+              local decoded_ok, decoded = pcall(vim.json.decode, table.concat(lines, "\n"))
+              if decoded_ok then
+                return decoded
+              end
+            end
+
+            local function litellm_config()
+              local models = read_json(agent_dir() .. "/models.json")
+              return models and models.providers and models.providers.litellm or {}
+            end
+
+            local function model_choices()
+              local choices = {}
+              for _, model in ipairs(litellm_config().models or {}) do
+                if model.id then
+                  choices[model.id] = { opts = {} }
+                end
+              end
+              return choices
+            end
+
+            local function default_model()
+              local choices = model_choices()
+              return choices["gpt-5.4-mini"] and "gpt-5.4-mini" or "gpt-5.5"
+            end
+
+            return require("codecompanion.adapters").extend("openai_compatible", {
+              name = "litellm-fast",
+              formatted_name = "LiteLLM Fast",
+              env = {
+                api_key = litellm_config().apiKey,
+                url = litellm_config().baseUrl or "https://litellm.wenext.technology/v1",
+                chat_url = "/chat/completions",
+                models_endpoint = "/models",
+              },
+              schema = {
+                model = {
+                  default = default_model,
+                  choices = model_choices,
+                },
+              },
+            })
+          end,
+        },
         acp = {
           pi = function()
             return require("codecompanion.adapters").extend("codex", {
@@ -45,6 +103,49 @@ return {
               },
               env = {},
             })
+          end,
+          omp = function()
+            local helpers = require("codecompanion.adapters.acp.helpers")
+
+            return {
+              name = "omp",
+              formatted_name = "OMP",
+              type = "acp",
+              roles = {
+                llm = "assistant",
+                user = "user",
+              },
+              commands = {
+                default = {
+                  "/Users/enoch/.bun/bin/omp",
+                  "acp",
+                },
+              },
+              defaults = {
+                auth_method = "agent",
+                mcpServers = {},
+                timeout = 20000,
+              },
+              parameters = {
+                protocolVersion = 1,
+                clientCapabilities = {
+                  fs = { readTextFile = true, writeTextFile = true },
+                },
+                clientInfo = {
+                  name = "CodeCompanion.nvim",
+                  version = "1.0.0",
+                },
+              },
+              handlers = {
+                setup = function()
+                  return true
+                end,
+                form_messages = function(self, messages, capabilities)
+                  return helpers.form_messages(self, messages, capabilities)
+                end,
+                on_exit = function() end,
+              },
+            }
           end,
         },
       },
@@ -65,10 +166,10 @@ return {
           adapter = "pi",
         },
         inline = {
-          adapter = "copilot",
+          adapter = "litellm-fast",
         },
         cmd = {
-          adapter = "copilot",
+          adapter = "pi",
         },
       },
     },
