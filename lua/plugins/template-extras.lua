@@ -24,7 +24,7 @@ return {
       {
         "<leader>cz",
         function()
-          Snacks.picker.files({ cwd = "~/.local/share/chezmoi" })
+          require("fzf-lua").files({ cwd = vim.fn.expand("~/.local/share/chezmoi") })
         end,
         desc = "Chezmoi Files",
       },
