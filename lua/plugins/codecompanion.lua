@@ -89,7 +89,7 @@ return {
         },
         acp = {
           pi = function()
-            return require("codecompanion.adapters").extend("codex", {
+            local adapter = require("codecompanion.adapters").extend("codex", {
               name = "pi",
               formatted_name = "Pi",
               commands = {
@@ -98,11 +98,15 @@ return {
                 },
               },
               defaults = {
+                auth_method = "agent",
                 mcpServers = {},
                 timeout = 20000,
               },
-              env = {},
             })
+
+            adapter.env = {}
+
+            return adapter
           end,
           omp = function()
             local helpers = require("codecompanion.adapters.acp.helpers")
